@@ -1,0 +1,33 @@
+{
+  "kind": "collectionType",
+  "collectionName": "appointments",
+  "info": {
+    "singularName": "appointment",
+    "pluralName": "appointments",
+    "displayName": "Appointments"
+  },
+  "options": {
+    "draftAndPublish": true
+  },
+  "attributes": {
+    "doctorName": {
+      "type": "string",
+      "required": true
+    },
+    "date": {
+      "type": "datetime",
+      "required": true
+    },
+    "reason": {
+      "type": "text"
+    },
+    "statusC": {
+      "type": "enumeration",
+      "enum": [
+        "Pending",
+        "Confirmed",
+        "Canceled"
+      ]
+    }
+  }
+}
