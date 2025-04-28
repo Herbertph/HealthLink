@@ -59,23 +59,31 @@
   const router = useRouter()
   
   const createAppointment = async () => {
-    try {
-      await axios.post('http://localhost:1337/api/appointments', {
-        data: {
-          doctorName: doctorName.value,
-          date: date.value,
-          reason: reason.value,
-        },
-      })
-      successMessage.value = 'Appointment created successfully!'
-  
-      // Optionally, redirect after a few seconds
-      setTimeout(() => {
-        router.push('/')
-      }, 1500)
-    } catch (error) {
-      console.error('Error creating appointment:', error)
-    }
+  try {
+    const token = localStorage.getItem('jwt'); 
+
+    await axios.post('http://localhost:1337/api/appointments', {
+      data: {
+        doctorName: doctorName.value,
+        date: date.value,
+        reason: reason.value,
+      }
+    }, {
+      headers: {
+        Authorization: `Bearer ${token}` 
+      }
+    });
+
+    successMessage.value = 'Appointment created successfully! Redirecting...'
+
+    setTimeout(() => {
+      router.push('/')
+    }, 1500)
+  } catch (error) {
+    console.error('Error creating appointment:', error)
+    errorMessage.value = 'Failed to create appointment.'
   }
+}
+
   </script>
   
