@@ -57,8 +57,11 @@ const login = async () => {
     password.value = ''
 
     setTimeout(() => {
-      router.push('/')
-    }, 1500)
+  router.push('/');          
+  setTimeout(() => {
+    window.location.reload(); 
+  }, 100); 
+}, 1500);
   } catch (error) {
     console.error('Login error:', error)
     errorMessage.value = 'Login failed. Please check your credentials.'

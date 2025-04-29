@@ -35,6 +35,11 @@
       "relation": "manyToOne",
       "target": "plugin::users-permissions.user",
       "inversedBy": "appointments"
+    },
+    "documentIdd": {
+      "type": "text",
+      "required": true,
+      "unique": true
     }
   }
 }
