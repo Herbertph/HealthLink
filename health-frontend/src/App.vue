@@ -1,47 +1,51 @@
 <template>
   <div class="min-h-screen bg-gray-100 flex flex-col">
-    <div class="max-w-7xl mx-auto w-full flex flex-col flex-grow">
+    <!-- Wrapper principal -->
+    <div class="w-full flex flex-col flex-grow">
 
-      <!-- Navbar -->
-      <nav class="bg-blue-600 p-4 text-white flex justify-between">
+      <!-- Header/Navbar -->
+      <nav class="bg-blue-600 w-full p-4 text-white flex justify-between">
         <div class="font-bold">
           Blue Health
         </div>
         <div class="flex items-center space-x-4">
+          <div v-if="username" class="text-white font-semibold">
+            Welcome, {{ username }}!
+          </div>
           <RouterLink to="/" class="hover:underline">Home</RouterLink>
 
-          <template v-if="username">
-            <RouterLink to="/new" class="hover:underline">New Appointment</RouterLink>
+          <button 
+            v-if="username" 
+            @click="logout" 
+            class="hover:underline text-white font-semibold"
+          >
+            Logout
+          </button>
 
-            <div class="text-white font-semibold">
-              Welcome, {{ username }}!
-            </div>
-
-            <button 
-              @click="logout" 
-              class="hover:underline text-white font-semibold"
-            >
-              Logout
-            </button>
-          </template>
-
-          <template v-else>
-            <RouterLink to="/register" class="hover:underline">Register</RouterLink>
-            <RouterLink to="/login" class="hover:underline">Login</RouterLink>
-          </template>
+          <RouterLink v-if="!username" to="/register" class="hover:underline">
+            Register
+          </RouterLink>
+          <RouterLink v-if="!username" to="/login" class="hover:underline">
+            Login
+          </RouterLink>
         </div>
       </nav>
 
-      <!-- Conteúdo -->
-      <main class="flex-grow px-4 py-8">
-        <RouterView />
+      <!-- Animated RouterView -->
+      <main class="flex-grow max-w-7xl w-full mx-auto px-4 py-8">
+        <motion-div
+          :initial="{ opacity: 0, y: 20 }"
+          :enter="{ opacity: 1, y: 0, transition: { duration: 0.4 } }"
+          :leave="{ opacity: 0, y: -20, transition: { duration: 0.2 } }"
+        >
+          <RouterView />
+        </motion-div>
       </main>
 
       <!-- Footer -->
-      <footer class="bg-blue-600 text-white text-center p-4 mt-8">
+      <footer class="bg-blue-600 text-white text-center p-4 mt-8 w-full">
         &copy; 2025 Blue Health. All rights reserved.
       </footer>
-      
     </div>
   </div>
 </template>
@@ -67,6 +71,7 @@ const fetchMe = async () => {
         Authorization: `Bearer ${token}`
       }
     })
+
     username.value = response.data.username
   } catch (error) {
     console.error('Error fetching user info:', error)
@@ -74,21 +79,15 @@ const fetchMe = async () => {
   }
 }
 
-const logout = async () => {
+const logout = () => {
   localStorage.removeItem('jwt')
   localStorage.removeItem('user')
   username.value = ''
-
-  if (router.currentRoute.value.path === '/') {
-    await router.replace('/refresh')
-    await router.replace('/')
-  } else {
-    router.push('/')
-  }
+  router.push('/')
+  setTimeout(() => window.location.reload(), 200)
 }
 
 onMounted(() => {
   fetchMe()
 })
 </script>
-

@@ -53,35 +53,33 @@ export default factories.createCoreController('api::appointment.appointment', ({
     return { data: updatedAppointment };
   },
 
+ 
   async find(ctx) {
     const user = ctx.state.user;
     if (!user) {
       return ctx.unauthorized('You must be logged in to view appointments.');
     }
-
+  
     console.log('User ID from token:', user.id);
-
-    const { query } = ctx;
-
-    if (user.role && user.role.name === 'Admin') {
-      const sanitizedQuery = await this.sanitizeQuery(ctx);
-      const data = await strapi.entityService.findMany('api::appointment.appointment', sanitizedQuery);
+  
+    // Admin pode ver tudo
+    if (user.role?.name === 'Admin') {
+      const data = await strapi.entityService.findMany('api::appointment.appointment', {
+        populate: ['users_permissions_user'],
+      });
       return { data };
     }
-
-    const currentFilters = (query.filters ?? {}) as object;
-
-    ctx.query.filters = {
-      ...currentFilters,
-      users_permissions_user: {
-        id: {
-          $eq: user.id,
+  
+    // Usuário comum: só seus próprios
+    const data = await strapi.entityService.findMany('api::appointment.appointment', {
+      filters: {
+        users_permissions_user: {
+          id: user.id,
         },
       },
-    };
-
-    const sanitizedQuery = await this.sanitizeQuery(ctx);
-    const data = await strapi.entityService.findMany('api::appointment.appointment', sanitizedQuery);
+      populate: ['users_permissions_user'],
+    });
+  
     return { data };
   },
 
