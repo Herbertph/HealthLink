@@ -1,5 +1,5 @@
 import { factories } from '@strapi/strapi';
-import { nanoid } from 'nanoid';
+
 
 export default factories.createCoreController('api::appointment.appointment', ({ strapi }) => ({
     async create(ctx) {
@@ -9,12 +9,14 @@ export default factories.createCoreController('api::appointment.appointment', ({
       }
   
       const { data } = ctx.request.body;
+
+      const { nanoid } = await import('nanoid');
   
       const response = await strapi.entityService.create('api::appointment.appointment', {
         data: {
           ...data,
           users_permissions_user: user.id,
-          documentIdd: data.documentIdd || nanoid(20) // Se não vier, cria um ID aleatório
+          documentIdd: data.documentIdd || nanoid(20) 
         },
       });
   
