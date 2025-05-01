@@ -1,7 +1,7 @@
 <template>
-  <div class="p-6">
+  <div class="min-h-screen p-6 bg-gray-100">
     <!-- Hero Section -->
-    <div class="text-center my-12">
+    <div class="text-center mb-6 mt-12">
       <h1 class="text-4xl font-bold text-blue-700 mb-4">Welcome to Blue Health</h1>
       <p class="text-gray-600 text-lg">
         Manage your medical appointments easily and efficiently.
@@ -9,52 +9,47 @@
     </div>
 
     <!-- Create Appointment Button -->
-    <div class="flex justify-center mb-8" v-if="isLoggedIn">
-      <RouterLink 
-        to="/new" 
-        class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 transition"
+    <div
+      class="flex justify-center mb-10"
+      v-if="isLoggedIn && appointments.length > 0"
+    >
+      <RouterLink
+        to="/new"
+        class="bg-blue-600 text-white py-3 px-6 rounded-lg hover:bg-blue-700 shadow-md transition"
       >
-        Create Appointment
+        <i class="fa-regular fa-calendar-plus mr-2"></i> Create Appointment
       </RouterLink>
     </div>
 
-    <!-- Appointments List -->
-    <div v-if="appointments.length > 0" class="grid gap-6 md:grid-cols-2">
-      <motion-div
+    <!-- Appointments Grid -->
+    <div v-if="appointments.length > 0" class="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+      <AppointmentCard
         v-for="appointment in appointments"
         :key="appointment.id"
-        class="bg-white p-6 rounded-lg shadow hover:shadow-md transition"
-        v-motion="{
-          initial: { opacity: 0, y: 20 },
-          enter: { opacity: 1, y: 0, transition: { type: 'spring', stiffness: 300 } }
-        }"
-      >
-        <h2 class="text-2xl font-semibold mb-2 text-blue-700">{{ appointment.doctorName }}</h2>
-        <p class="text-gray-600"><strong>Date:</strong> {{ formatDate(appointment.date) }}</p>
-        <p class="text-gray-600"><strong>Reason:</strong> {{ appointment.reason || 'Not provided' }}</p>
-
-        <div class="flex gap-4 mt-6">
-          <router-link 
-            :to="`/appointment/edit/${appointment.documentIdd}`" 
-            class="bg-yellow-400 text-white py-2 px-4 rounded hover:bg-yellow-500"
-          >
-            Edit
-          </router-link>
-
-          <button 
-            @click="deleteAppointment(appointment.id)"
-            class="bg-red-500 text-white py-2 px-4 rounded hover:bg-red-600"
-          >
-            Delete
-          </button>
-        </div>
-      </motion-div>
+        :appointment="appointment"
+        :formatDate="formatDate"
+        @delete="deleteAppointment"
+      />
     </div>
 
-    <!-- No Appointments Message + Image -->
-    <div v-else class="text-center mt-16">
-      <p class="text-lg text-gray-600 mb-4">No appointments scheduled yet.</p>
-      
+    <!-- Empty Card Centralizado -->
+    <div
+      v-else
+      class="flex items-center justify-center min-h-[60vh]"
+    >
+      <div class="bg-white rounded-xl border border-dashed border-gray-300 p-6 text-center text-gray-500 flex flex-col justify-center items-center">
+        <i class="fa-regular fa-calendar-plus text-4xl mb-4"></i>
+        <p class="mb-4">No more appointments scheduled</p>
+
+        <!-- Só aparece se estiver logado -->
+        <RouterLink
+          v-if="isLoggedIn"
+          to="/new"
+          class="bg-gray-100 text-gray-700 px-4 py-2 rounded hover:bg-gray-200 text-sm"
+        >
+          Add New Appointment
+        </RouterLink>
+      </div>
     </div>
   </div>
 </template>
@@ -63,6 +58,7 @@
 import { ref, onMounted } from 'vue'
 import axios from 'axios'
 import { useMotion } from '@vueuse/motion'
+import AppointmentCard from '../components/AppointmentCard.vue'
 
 const appointments = ref([])
 const isLoggedIn = ref(false)
@@ -81,7 +77,6 @@ const fetchAppointments = async () => {
       }
     })
 
-    console.log('API Response:', response.data)
     appointments.value = response.data.data
   } catch (error) {
     console.error('Error fetching appointments:', error)
@@ -110,12 +105,12 @@ const deleteAppointment = async (id) => {
 
 const formatDate = (dateString) => {
   if (!dateString) return 'Unknown date'
-  const options = { 
-    year: 'numeric', 
-    month: 'long', 
-    day: 'numeric', 
-    hour: '2-digit', 
-    minute: '2-digit' 
+  const options = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
   }
   return new Date(dateString).toLocaleDateString('en-US', options)
 }
