@@ -2,23 +2,26 @@
   <div class="p-6 max-w-md mx-auto">
     <h1 class="text-3xl font-bold mb-6 text-blue-700">Edit Appointment</h1>
 
-    <form v-if="appointment" @submit.prevent="updateAppointment" class="space-y-6">
+    <form v-if="formData" @submit.prevent="updateAppointment" class="space-y-6">
       <div>
         <label class="block mb-2 font-semibold">Doctor Name</label>
-        <input v-model="appointment.doctorName" type="text" class="w-full p-2 border rounded-md" required />
+        <input v-model="formData.doctorName" type="text" class="w-full p-2 border rounded-md" required />
       </div>
 
       <div>
         <label class="block mb-2 font-semibold">Date</label>
-        <input v-model="appointment.date" type="datetime-local" class="w-full p-2 border rounded-md" required />
+        <input v-model="formData.date" type="datetime-local" class="w-full p-2 border rounded-md" required />
       </div>
 
       <div>
         <label class="block mb-2 font-semibold">Reason</label>
-        <input v-model="appointment.reason" type="text" class="w-full p-2 border rounded-md" />
+        <input v-model="formData.reason" type="text" class="w-full p-2 border rounded-md" />
       </div>
 
-      <button type="submit" class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700">
+      <button 
+        type="submit" 
+        class="bg-blue-600 text-white py-2 px-4 rounded hover:bg-blue-700 transition"
+      >
         Save Changes
       </button>
     </form>
@@ -36,26 +39,29 @@ import axios from 'axios'
 
 const route = useRoute()
 const router = useRouter()
-const appointment = ref(null)
+const formData = ref(null)
 
 const fetchAppointment = async () => {
   try {
     const token = localStorage.getItem('jwt')
     if (!token) return
 
-    const response = await axios.get(`http://localhost:1337/api/appointments?populate=*&filters[documentIdd][$eq]=${route.params.documentIdd}&publicationState=preview`, {
-  headers: {
-    Authorization: `Bearer ${token}`
-  }
-});
+    const documentId = route.params.id
 
-if (response.data.data.length > 0) {
-      const fetched = response.data.data[0]
-      appointment.value = {
+    const response = await axios.get(`http://localhost:1337/api/appointments?filters[documentId][$eq]=${documentId}`, {
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+
+    const fetched = response.data.data[0]
+
+    if (fetched) {
+      formData.value = {
         id: fetched.id,
-        doctorName: fetched.doctorName, 
-        date: formatDateForInput(fetched.date), 
-        reason: fetched.reason 
+        doctorName: fetched.doctorName,
+        date: formatDateForInput(fetched.date),
+        reason: fetched.reason || ''
       }
     } else {
       console.error('Appointment not found')
@@ -67,33 +73,37 @@ if (response.data.data.length > 0) {
 
 const updateAppointment = async () => {
   try {
-    const token = localStorage.getItem('jwt');
-    if (!token || !appointment.value) return;
+    const token = localStorage.getItem('jwt')
+    if (!token || !formData.value) return
 
-    await axios.put(`http://localhost:1337/api/appointments/${appointment.value.id}`, {
+    await axios.put(`http://localhost:1337/api/appointments/${formData.value.id}`, {
       data: {
-        doctorName: appointment.value.doctorName,
-        date: new Date(appointment.value.date).toISOString(), 
-        reason: appointment.value.reason,
-      },
+        doctorName: formData.value.doctorName,
+        date: new Date(formData.value.date).toISOString(),
+        reason: formData.value.reason
+      }
     }, {
       headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+        Authorization: `Bearer ${token}`
+      }
+    })
 
-    console.log('Appointment updated successfully!');
-    router.push('/');
+    console.log('Appointment updated successfully!')
+    router.push('/')
+    setTimeout(() => window.location.reload(), 300)
   } catch (error) {
-    console.error('Error updating appointment:', error);
+    console.error('Error updating appointment:', error)
   }
-};
+}
 
 const formatDateForInput = (dateString) => {
   if (!dateString) return ''
+  
   const date = new Date(dateString)
-  const iso = date.toISOString()
-  return iso.slice(0, 16) // yyyy-MM-ddTHH:mm
+  const timezoneOffset = date.getTimezoneOffset() * 60000
+  const localISOTime = new Date(date.getTime() - timezoneOffset).toISOString().slice(0, 16)
+
+  return localISOTime
 }
 
 onMounted(() => {

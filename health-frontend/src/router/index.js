@@ -34,7 +34,7 @@ const router = createRouter({
       component: LoginView 
     },
     {
-      path: '/appointment/edit/:documentIdd',
+      path: '/appointment/edit/:id',
       name: 'edit-appointment',
       component: EditAppointmentView
     }
