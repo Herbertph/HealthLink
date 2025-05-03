@@ -59,9 +59,9 @@ const fetchAppointment = async () => {
     if (fetched) {
       formData.value = {
         id: fetched.id,
-        doctorName: fetched.doctorName,
-        date: formatDateForInput(fetched.date),
-        reason: fetched.reason || ''
+        doctorName: fetched.attributes.doctorName,
+        date: formatDateForInput(fetched.attributes.date),
+        reason: fetched.attributes.reason || ''
       }
     } else {
       console.error('Appointment not found')

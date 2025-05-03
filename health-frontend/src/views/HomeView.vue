@@ -77,12 +77,21 @@ const fetchAppointments = async () => {
       }
     })
 
-    appointments.value = response.data.data
+    appointments.value = response.data.data.map(item => ({
+      id: item.id,
+      documentId: item.documentId,
+      doctorName: item.doctorName,
+      date: item.date,
+      reason: item.reason,
+      status: item.status || '',
+      specialty: item.specialty || '',
+    }))
   } catch (error) {
     console.error('Error fetching appointments:', error)
     appointments.value = []
   }
 }
+
 
 const deleteAppointment = async (id) => {
   try {
